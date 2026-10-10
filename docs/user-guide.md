@@ -1,6 +1,6 @@
 # Web 使用指南
 
-[返回首页](README.md) · [安装与启动](QUICKSTART.md) · [功能范围](WEB_FEATURES.md)
+[返回首页](../README.md) · [安装与启动](quickstart.md) · [功能范围](features.md)
 
 ## 1. 添加账户
 
@@ -61,7 +61,7 @@
 
 ## 接口速查
 
-以下接口由新版 Web 使用，路径均以 `/api` 开头。具体校验与返回结构以 [账户路由](webapp/routes/accounts.py)、[任务路由](webapp/routes/tasks.py) 和 [设置路由](webapp/routes/settings.py) 为准。
+以下接口由新版 Web 使用，路径均以 `/api` 开头。具体校验与返回结构以 [账户路由](../webapp/routes/accounts.py)、[任务路由](../webapp/routes/tasks.py) 和 [设置路由](../webapp/routes/settings.py) 为准。
 
 | 方法 | 路径 | 用途 |
 | --- | --- | --- |
@@ -82,4 +82,4 @@
 | GET / PUT | `/api/settings/runtime` | 读取或保存运行限制 |
 | GET | `/api/health` | 服务健康检查 |
 
-Web 不提供旧版外部通知面板、多题库选择器或专用 OCR 设置栏。CLI 和后端兼容配置见 [功能对照](FEATURE_COMPARISON.md) 与 [进阶配置](docs/operations.md)。
+Web 不提供旧版外部通知面板、多题库选择器或专用 OCR 设置栏。CLI 和后端兼容配置见 [功能对照](web-vs-cli.md) 与 [进阶配置](operations.md)。

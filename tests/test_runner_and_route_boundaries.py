@@ -1,4 +1,4 @@
-"""Focused RED/GREEN coverage for the final unified fix wave.
+"""Runner, persistence, route and log-sink boundary regressions.
 
 These tests deliberately exercise the seams called out by the final review:
 the task reporter, persistence boundaries, route error envelopes, and the

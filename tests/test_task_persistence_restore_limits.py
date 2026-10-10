@@ -1,4 +1,4 @@
-"""Round-six regressions for bounded task persistence restoration."""
+"""Bounded task history restoration after a restart."""
 
 from __future__ import annotations
 

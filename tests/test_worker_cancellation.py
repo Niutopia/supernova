@@ -1,4 +1,4 @@
-"""Round-five regressions for course isolation and worker cancellation gates."""
+"""Course isolation and worker cancellation gates."""
 
 from __future__ import annotations
 

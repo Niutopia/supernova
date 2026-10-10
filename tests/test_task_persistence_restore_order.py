@@ -1,4 +1,4 @@
-"""Round-seven regressions for trusted restore hints and task ordering."""
+"""Trusted restore hints and task ordering after a restart."""
 
 from __future__ import annotations
 

@@ -14,4 +14,4 @@
 | 任务状态与历史 | SQLite 保存、页面查看 | 终端日志 |
 | 运行入口 | `app.py` / Docker Compose | `main.py` |
 
-`main.py` 和 `api/` 同时是新版 Web 的实际执行引擎，不属于可直接删除的旧版页面。使用方法见 [快速开始](QUICKSTART.md)，实际能力见 [功能说明](WEB_FEATURES.md)。
+`main.py` 和 `api/` 同时是新版 Web 的实际执行引擎，不属于可直接删除的旧版页面。使用方法见 [快速开始](quickstart.md)，实际能力见 [功能说明](features.md)。

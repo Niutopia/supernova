@@ -1,4 +1,4 @@
-"""Round-five regression coverage for task persistence boundaries."""
+"""Task persistence redacts secrets and survives late log records."""
 
 from __future__ import annotations
 

@@ -1,6 +1,6 @@
 # 新版 Web 功能说明
 
-[返回首页](README.md) · [使用指南](WEB_FRONTEND_GUIDE.md) · [Web / CLI 对照](FEATURE_COMPARISON.md)
+[返回首页](../README.md) · [使用指南](user-guide.md) · [Web / CLI 对照](web-vs-cli.md)
 
 ## 页面与功能
 
@@ -61,4 +61,4 @@
 
 新版 Web 使用全局共享的 AI 连接，不提供旧版多题库选择器或外部通知设置。其他题库和通知由 CLI 配置。Web 引擎仍兼容读取后端 OCR 配置，目前没有专用 OCR 设置面板。
 
-具体配置入口见 [功能对照](FEATURE_COMPARISON.md)，测试范围见 [验证说明](docs/verification.md)。
+具体配置入口见 [功能对照](web-vs-cli.md)，测试范围见 [验证说明](verification.md)。

@@ -1,6 +1,6 @@
 # Web 前端开发
 
-[项目首页](../README.md) · [使用指南](../WEB_FRONTEND_GUIDE.md) · [快速开始](../QUICKSTART.md)
+[项目首页](../README.md) · [使用指南](../docs/user-guide.md) · [快速开始](../docs/quickstart.md)
 
 新版前端包含账户概览、课程工作台、任务详情和全局设置。使用 React 18、React Router、Vite、TailwindCSS、Axios 和 Lucide 图标。
 
@@ -39,4 +39,4 @@ src/
 
 交互测试与组件放在一起，以 `.test.jsx` 命名。提交界面改动前检查加载、空数据、失败、取消及完成状态。
 
-课程必须至少选择一门，空选择不会启动全部课程。答题正确率以平台判分为准，具体口径见 [功能说明](../WEB_FEATURES.md)。
+课程必须至少选择一门，空选择不会启动全部课程。答题正确率以平台判分为准，具体口径见 [功能说明](../docs/features.md)。

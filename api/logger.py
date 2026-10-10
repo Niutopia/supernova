@@ -665,7 +665,10 @@ level = env("LOG_LEVEL", "INFO").strip().upper()
 if level not in {item.upper() for item in _LOG_LEVELS}:
     level = "INFO"
 logger.add(tqdm_sink, colorize=True, enqueue=False, level=level)
-data_dir = Path(env("DATA_DIR", ".")).expanduser()
+# Default to the same data/ directory the Web app uses for its database.
+data_dir = Path(
+    env("DATA_DIR") or Path(__file__).resolve().parent.parent / "data"
+).expanduser()
 data_dir.mkdir(parents=True, exist_ok=True)
 log_path = data_dir / "supernova.log"
 logger.add(

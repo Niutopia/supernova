@@ -1,6 +1,6 @@
 # 快速开始
 
-[返回首页](README.md) · [使用指南](WEB_FRONTEND_GUIDE.md) · [备份与恢复](docs/operations.md)
+[返回首页](../README.md) · [使用指南](user-guide.md) · [备份与恢复](operations.md)
 
 推荐通过 Docker 在本机运行。当前 Web 工作台面向单机、单用户，可保存自己的多个超星账户。
 
@@ -50,7 +50,7 @@ docker compose up --build -d
 
 更新前先停止正在执行的学习任务。服务重启时，原运行任务会标记为中断；重新开始会读取平台进度，历史任务仍保留。
 
-账户、配置、历史和缓存默认位于 `supernova-data` 命名卷；从旧版升级时可通过 `.env` 中的 `SUPERNOVA_DATA_VOLUME` 和 `SUPERNOVA_DATA_EXTERNAL=true` 继续使用原数据卷（见[升级说明](docs/operations.md#从旧版升级到超新星)）。**不要把 `docker compose down -v` 当作普通更新命令，它会删除数据卷。** 迁移或重装前，请按 [完整步骤](docs/operations.md) 备份。
+账户、配置、历史和缓存默认位于 `supernova-data` 命名卷；从旧版升级时可通过 `.env` 中的 `SUPERNOVA_DATA_VOLUME` 和 `SUPERNOVA_DATA_EXTERNAL=true` 继续使用原数据卷（见[升级说明](operations.md#从旧版升级到超新星)）。**不要把 `docker compose down -v` 当作普通更新命令，它会删除数据卷。** 迁移或重装前，请按 [完整步骤](operations.md) 备份。
 
 ## 方式二：本地开发
 
@@ -80,7 +80,7 @@ npm run dev
 
 开发前端会代理 `/api` 请求到后端。不设置 `SUPERNOVA_DATA_DIR` 时，开发数据存放在项目的 `data/` 中，与 Docker 命名卷相互独立。
 
-命令行模式见 [进阶说明](docs/operations.md)。
+命令行模式见 [进阶说明](operations.md)。
 
 macOS 的“隔空播放接收器”默认占用 5000 端口，本地开发时如果后端无法启动或请求返回 403，请在“系统设置 → 通用 → 隔空播放与接力”中关闭它。
 
@@ -98,4 +98,4 @@ curl -fsS http://127.0.0.1:5001/api/health
 - 直播或章节未开放：等待平台开放后重新启动该课程。
 - 正确率缺失：点击“刷新判分”；平台尚未批阅时会继续显示待判分。
 
-测试与构建命令见 [验证说明](docs/verification.md)。
+测试与构建命令见 [验证说明](verification.md)。

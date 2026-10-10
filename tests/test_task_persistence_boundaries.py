@@ -1,4 +1,4 @@
-"""Focused regression coverage for the round-four task boundaries.
+"""Task monitor and SQLite persistence boundaries.
 
 These tests exercise only the process-local task monitor and SQLite adapter.
 They do not contact Chaoxing, the answer service, or any external endpoint.

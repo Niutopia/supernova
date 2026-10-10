@@ -1,6 +1,6 @@
 # 测试与验证
 
-[返回首页](../README.md) · [快速开始](../QUICKSTART.md)
+[返回首页](../README.md) · [快速开始](quickstart.md)
 
 ## 运行检查
 

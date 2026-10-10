@@ -1,4 +1,4 @@
-"""Round-seven regressions for deterministic live-job failure cancellation."""
+"""Deterministic cancellation after a live-job failure."""
 
 from __future__ import annotations
 

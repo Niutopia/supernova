@@ -1,4 +1,4 @@
-"""Focused RED/GREEN coverage for Final Unified Fix Round 3."""
+"""Legacy account rows keep only the secret their auth mode allows."""
 
 from __future__ import annotations
 

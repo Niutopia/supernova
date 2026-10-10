@@ -1,4 +1,4 @@
-"""Round 2 regression tests for malformed boundaries and account state safety."""
+"""Malformed engine responses, auth-mode cleanup and settings fail-closed paths."""
 
 from __future__ import annotations
 
