@@ -2,7 +2,7 @@
 
 [返回首页](../README.md) · [快速开始](../QUICKSTART.md)
 
-日常使用优先阅读快速开始。本页保留完整的数据卷备份与恢复步骤，以及 CLI、OCR 和便携打包说明。备份和恢复脚本使用 Bash，请在项目根目录执行。
+日常使用优先阅读快速开始。本页保留完整的数据卷备份与恢复步骤，以及 CLI 与 OCR 说明。备份和恢复脚本使用 Bash，请在项目根目录执行。
 
 ## 从旧版升级到超新星
 
@@ -248,18 +248,6 @@ fi
 答题连接由全局设置页管理，API Key 保存在本地数据卷。先保存连接，再测试已保存的配置。账户、偏好、任务历史、判分报告和答题缓存随数据卷保留。
 
 备份结束后执行 `docker compose up -d web` 恢复服务；日常停止使用 `docker compose stop web`。
-
-## Windows 便携打包
-
-打包脚本会使用 `npm ci` 安装锁定的前端依赖，再构建界面。构建前需要安装 Node.js，并保留 `web/package-lock.json`。
-
-```bash
-clean_and_build_portable.bat
-```
-生成 `supernova_portable` 目录，免安装 Python 直接分发。便携版按仓库中锁定的
-`requirements.txt` 安装基础依赖；由于 PaddleOCR 的 Windows 二进制依赖无法在本仓库
-中可靠锁定，便携版明确不包含本地 PaddleOCR、`paddlepaddle` 或 `paddlex`，验证码请
-手动输入或配置在线 OCR 服务。
 
 ## 命令行模式
 ```bash

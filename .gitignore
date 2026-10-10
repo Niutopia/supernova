@@ -157,13 +157,6 @@ config*.ini
 cache.json
 web_config.json
 
-# Portable build
-supernova_portable/
-supernova_portable.zip
-portable_build/
-python-embed.zip
-get-pip.py
-
 # Frontend
 web/node_modules/
 web/dist/

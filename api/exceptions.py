@@ -14,11 +14,6 @@ class InputFormatError(Exception):
         super().__init__(*args)
 
 
-class MaxRollBackExceeded(Exception):
-    def __init__(self, *args: object):
-        super().__init__(*args)
-
-
 class MaxRetryExceeded(Exception):
     def __init__(self, *args: object):
         super().__init__(*args)

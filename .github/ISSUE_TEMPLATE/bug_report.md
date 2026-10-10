@@ -9,7 +9,7 @@ assignees: ''
 ## 运行环境
 
 - 系统与版本：
-- 运行方式：Docker / 本地 Python / Windows CLI
+- 运行方式：Docker / 本地开发 / 命令行
 - 代码版本（提交号或下载日期）：
 - 浏览器（Web 问题填写）：
 

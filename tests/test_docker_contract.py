@@ -91,7 +91,7 @@ def test_operations_uses_shell_safe_ocr_placeholder_and_current_docker_troublesh
     assert "Settings" in readme
 
 
-def test_docker_contract_keeps_runtime_environment_explicit_and_excludes_portables():
+def test_docker_contract_keeps_runtime_environment_explicit():
     compose = yaml.safe_load(Path("compose.yaml").read_text())
     environment = compose["services"]["web"]["environment"]
     if isinstance(environment, list):
@@ -102,9 +102,6 @@ def test_docker_contract_keeps_runtime_environment_explicit_and_excludes_portabl
     dockerignore = Path(".dockerignore").read_text()
     assert "*.zip" in dockerignore
     assert "**/*.zip" in dockerignore
-    assert "portable/" in dockerignore
-    assert "supernova_portable/" in dockerignore
-    assert "portable_build/" in dockerignore
 
 
 def test_operations_backup_resolves_the_running_compose_volume_and_cli_docs_are_precise():
@@ -114,7 +111,6 @@ def test_operations_backup_resolves_the_running_compose_volume_and_cli_docs_are_
     assert "Destination" in readme and "/app/data" in readme
     assert "chaoxing-fanya_chaoxing-data" not in readme
     assert "python main.py" in readme and "交互式运行" in readme
-    assert "npm ci" in readme
     assert "删除 node_modules 与锁文件" not in readme
 
 
@@ -145,38 +141,6 @@ def test_operations_validates_restore_archive_before_clearing_the_volume():
     assert "tar -tzf" in restore
     assert restore.index("gzip -t") < restore.index("tar -tzf")
     assert restore.index("tar -tzf") < restore.index("find /target")
-
-
-def test_windows_build_scripts_use_declared_python_and_locked_frontend_install():
-    scripts = [
-        Path("build_portable.bat").read_text(),
-        Path("clean_and_build_portable.bat").read_text(),
-        Path("quick_build.bat").read_text(),
-    ]
-    portable_scripts = scripts[:2]
-
-    for script in portable_scripts:
-        version = re.search(r'set "PYTHON_VERSION=([^"\r\n]+)"', script)
-        assert version is not None
-        assert version.group(1).startswith("3.13.")
-        assert "python313._pth" in script
-        assert "python313.zip" in script
-        assert "python311" not in script
-
-    for script in scripts:
-        assert "npm install" not in script
-        assert "npm ci" in script
-
-
-def test_portable_builds_copy_only_credential_free_configuration_templates():
-    build = Path("build_portable.bat").read_text()
-    clean_build = Path("clean_and_build_portable.bat").read_text()
-
-    for script in (build, clean_build):
-        assert "config.ini.example" in script
-        assert 'copy "%SCRIPT_DIR%config.ini"' not in script
-        assert 'copy "%SCRIPT_DIR%web_config.json"' not in script
-        assert "不会打包 web_config.json" in script
 
 
 def _restore_section(readme: str) -> str:
@@ -229,30 +193,6 @@ def test_data_init_docs_describe_explicit_run_without_remove_precondition():
     assert "rm -f data-init" not in lifecycle
 
 
-def _batch_block_end(lines, start):
-    """Return the closing line for a simple parenthesized batch block."""
-    depth = 0
-    for index in range(start, len(lines)):
-        depth += lines[index].count("(") - lines[index].count(")")
-        if index > start and depth == 0:
-            return index
-    raise AssertionError(f"unterminated batch block at line {start + 1}")
-
-
-def _assert_batch_error_guard_after(lines, command_index, label):
-    guard_index = command_index + 1
-    assert guard_index < len(lines), label
-    assert re.fullmatch(
-        r"if\s+errorlevel\s+1\s*\(", lines[guard_index].strip(), re.IGNORECASE
-    ), label
-    guard_end = _batch_block_end(lines, guard_index)
-    assert any(
-        re.fullmatch(r"exit\s+/b\s+1", line.strip(), re.IGNORECASE)
-        for line in lines[guard_index + 1 : guard_end]
-    ), label
-    return guard_end
-
-
 def _restore_failure_block(restore, marker, label):
     """Return one restore branch's direct ``else`` block.
 
@@ -296,103 +236,6 @@ def _restore_failure_block(restore, marker, label):
     return "\n".join(lines[else_line : fi_line + 1])
 
 
-def _assert_pip_zipapp_contract(name):
-    script = Path(name).read_text()
-    lowered = script.lower()
-
-    # A portable artifact cannot silently fetch a moving bootstrap script or
-    # install OCR packages from an unpinned index. OCR is explicitly absent.
-    assert "get-pip.py" not in lowered
-    assert "https://bootstrap.pypa.io/get-pip.py" not in lowered
-    assert not re.search(r"pip\s+install[^\r\n]*\bpaddlepaddle\b", lowered)
-    assert not re.search(r"pip\s+install[^\r\n]*\bpaddlex(?:\[|\s|\"|')", lowered)
-    assert "便携版不包含本地 ocr" in lowered or "不包含 paddleocr" in lowered
-
-    version = re.search(r'set "PIP_BOOTSTRAP_VERSION=([^"\r\n]+)"', script)
-    assert version is not None, name
-    assert version.group(1) == "26.2.1", name
-    assert "https://bootstrap.pypa.io/pip/zipapp/pip-%PIP_BOOTSTRAP_VERSION%.pyz" in script
-    assert 'set "PIP_BOOTSTRAP=%BUILD_DIR%\\pip.pyz"' in script
-
-    download = re.search(
-        r"Invoke-WebRequest[^\r\n]*PIP_BOOTSTRAP_URL[^\r\n]*PIP_BOOTSTRAP",
-        script,
-        re.IGNORECASE,
-    )
-    assert download is not None, name
-    lines = script.splitlines()
-    install_indexes = [
-        index
-        for index, line in enumerate(lines)
-        if re.fullmatch(
-            r'\s*"%PYTHON_EXE%"\s+"%PIP_BOOTSTRAP%"\s+install\b[^\r\n]*'
-            r'-r\s+"%SCRIPT_DIR%requirements\.txt"\s*',
-            line,
-            re.IGNORECASE,
-        )
-    ]
-    assert len(install_indexes) == 1, name
-    install_index = install_indexes[0]
-    assert "-m pip" not in lowered
-
-    download_index = next(
-        index
-        for index, line in enumerate(lines)
-        if re.search(r"Invoke-WebRequest", line, re.IGNORECASE)
-        and re.search(r"PIP_BOOTSTRAP_URL", line, re.IGNORECASE)
-    )
-    download_end = _assert_batch_error_guard_after(lines, download_index, name)
-    assert download_end < install_index
-    _assert_batch_error_guard_after(lines, install_index, name)
-
-
-@pytest.mark.parametrize("name", ("build_portable.bat", "clean_and_build_portable.bat"))
-def test_portable_scripts_have_strict_reproducible_dependency_policy(name):
-    _assert_pip_zipapp_contract(name)
-
-
-@pytest.mark.parametrize("name", ("build_portable.bat", "clean_and_build_portable.bat", "quick_build.bat"))
-def test_every_portable_build_runs_npm_ci_before_frontend_build_and_fails_fast(name):
-    lines = Path(name).read_text().splitlines()
-    lowered = [line.lower() for line in lines]
-    ci_indexes = [idx for idx, line in enumerate(lowered) if re.search(r"\bcall\s+npm\s+ci\b", line)]
-    build_indexes = [idx for idx, line in enumerate(lowered) if re.search(r"\bcall\s+npm\s+run\s+build\b", line)]
-
-    assert len(ci_indexes) == 1, name
-    assert len(build_indexes) == 1, name
-    ci_index = ci_indexes[0]
-    build_index = build_indexes[0]
-    assert ci_index < build_index, name
-    assert not any(
-        re.search(r"\bif\s+(?:not\s+)?exist\s+[\"']?[^\r\n]*\\?node_modules[\"']?\s*\(", line)
-        for line in lowered
-    )
-
-    ci_end = _assert_batch_error_guard_after(lines, ci_index, name)
-    assert ci_end < build_index, name
-    build_end = _assert_batch_error_guard_after(lines, build_index, name)
-
-    dist_index = build_end + 1
-    assert dist_index < len(lines), name
-    assert re.fullmatch(
-        r'if\s+not\s+exist\s+"dist\\index\.html"\s*\(',
-        lines[dist_index].strip(),
-        re.IGNORECASE,
-    ), name
-    dist_end = _batch_block_end(lines, dist_index)
-    assert any(
-        re.fullmatch(r"exit\s+/b\s+1", line.strip(), re.IGNORECASE)
-        for line in lines[dist_index + 1 : dist_end]
-    ), name
-
-    # A pre-existing dist/node_modules state must not provide a bypass around
-    # the clean, lockfile-driven install.
-    assert not any(
-        "goto :frontend_done" in line
-        for line in lowered[:ci_index]
-    ), name
-
-
 def test_compose_and_docs_keep_local_web_port_and_container_answer_host_contract():
     compose = yaml.safe_load(Path("compose.yaml").read_text())
     web = compose["services"]["web"]
@@ -404,38 +247,6 @@ def test_compose_and_docs_keep_local_web_port_and_container_answer_host_contract
     assert "Container target:  http://host.docker.internal:8849/v1" in readme
     assert "127.0.0.1:5001" in readme
     assert "127.0.0.1:5001:5000" in readme or "127.0.0.1:5001" in readme
-
-
-@pytest.mark.parametrize("name", ("build_portable.bat", "clean_and_build_portable.bat"))
-def test_portable_scripts_use_a_fixed_pip_zipapp_without_ensurepip_or_floating_bootstrap(name):
-    script = Path(name).read_text()
-    lowered = script.lower()
-
-    assert "ensurepip" not in lowered
-    assert "get-pip" not in lowered
-    _assert_pip_zipapp_contract(name)
-
-
-@pytest.mark.parametrize("name", ("build_portable.bat", "clean_and_build_portable.bat"))
-def test_portable_build_rejects_local_embed_without_python313_runtime_marker(name):
-    script = Path(name).read_text()
-    lines = script.splitlines()
-    pth_assignment = 'set "PTH_FILE=%PYTHON_DIR%\\python313._pth"'
-    pth_index = lines.index(pth_assignment)
-    guard = pth_index + 1
-    assert re.fullmatch(
-        r'if\s+not\s+exist\s+"%PTH_FILE%"\s*\(', lines[guard].strip(), re.IGNORECASE
-    ), name
-    guard_end = _batch_block_end(lines, guard)
-
-    assert "python311" not in script.lower()
-    assert guard > pth_index
-    assert any(
-        re.fullmatch(r"exit\s+/b\s+1", line.strip(), re.IGNORECASE)
-        for line in lines[guard + 1 : guard_end]
-    ), name
-    assert lines.index("echo python313.zip> \"%PTH_FILE%\"", guard_end) > guard_end
-    assert 'if exist "%PTH_FILE%" (' not in script
 
 
 def test_restore_has_explicit_failure_rollback_after_second_backup():

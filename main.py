@@ -305,22 +305,6 @@ def _run_worker_with_context(
     return invoke()
 
 
-def log_error(func):
-    def wrapper(*args, **kwargs):
-        try:
-            func(*args, **kwargs)
-        except StudyCancelled:
-            # Cooperative cancellation is an expected terminal path, not a
-            # worker error.  Let the owning runner observe it at the next
-            # safe boundary without emitting an error traceback per thread.
-            raise
-        except BaseException as e:
-            logger.error("线程工作失败（异常内容已省略）")
-            raise
-
-    return wrapper
-
-
 def str_to_bool(value):
     if isinstance(value, bool):
         return value

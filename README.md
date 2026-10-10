@@ -66,7 +66,7 @@ docker compose up --build -d
 
 已有数据保存在 Docker 命名卷中，普通停止、重启和镜像更新都会保留。初次构建需要下载依赖，稍后可用 `docker compose ps` 查看状态。
 
-更多安装方式见 [快速开始](QUICKSTART.md)，Windows 脚本、本地开发和 CLI 也在那里说明。
+本地开发和命令行模式见 [快速开始](QUICKSTART.md)。
 
 ## 日常使用
 

@@ -14,7 +14,6 @@ from typing import Optional
 
 import httpx
 import requests
-from openai import OpenAI
 from urllib3 import disable_warnings, exceptions
 
 from api.answer_check import *
@@ -1049,7 +1048,6 @@ class AI(Tiku):
         super().__init__()
         self.name = 'AI大模型答题'
         self.last_request_time = None
-        self.client: Optional[OpenAI] = None
         self._httpx_client: Optional[httpx.Client] = None
         self.http_proxy: Optional[str] = None
         self.min_interval_seconds: float = 3

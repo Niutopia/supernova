@@ -80,7 +80,9 @@ npm run dev
 
 开发前端会代理 `/api` 请求到后端。不设置 `SUPERNOVA_DATA_DIR` 时，开发数据存放在项目的 `data/` 中，与 Docker 命名卷相互独立。
 
-Windows 安装 Python 和 Node.js 后，可在项目目录运行 `start.bat`。该脚本启动后端与 Vite 开发服务，打开 3000 端口。便携打包及 CLI 见 [进阶说明](docs/operations.md)。
+命令行模式见 [进阶说明](docs/operations.md)。
+
+macOS 的“隔空播放接收器”默认占用 5000 端口，本地开发时如果后端无法启动或请求返回 403，请在“系统设置 → 通用 → 隔空播放与接力”中关闭它。
 
 ## 遇到问题
 
