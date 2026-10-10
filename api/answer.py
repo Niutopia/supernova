@@ -344,7 +344,6 @@ class Tiku:
     CONFIG_PATH = os.path.join(os.getcwd(), "config.ini")  # TODO: 从运行参数中获取config路径
     DISABLE = False     # 停用标志
     SUBMIT = False      # 提交标志
-    COVER_RATE = 0.8    # 覆盖率
     true_list = []
     false_list = []
     def __init__(self) -> None:
@@ -406,13 +405,6 @@ class Tiku:
         # 设置提交模式（缺省为不直接提交）
         submit_val = str(conf.get('submit', 'false')).strip().lower()
         self.SUBMIT = submit_val == 'true'
-
-        # 设置覆盖率（缺省为 0.8）
-        cover_raw = conf.get('cover_rate', '0.8')
-        try:
-            self.COVER_RATE = float(cover_raw)
-        except (TypeError, ValueError):
-            self.COVER_RATE = 0.8
 
         # 判断题映射表，支持缺省配置
         true_raw = conf.get('true_list')
@@ -554,8 +546,15 @@ class Tiku:
             self.DISABLE = True
             logger.error("未找到题库配置, 已忽略题库功能")
             return self
-        # FIXME: Implement using StrEnum instead. This is not only buggy but also not safe
-        new_cls = globals()[cls_name]()
+        provider_cls = _TIKU_PROVIDERS.get(str(cls_name).strip())
+        if provider_cls is None:
+            self.DISABLE = True
+            logger.error(
+                "未知的题库 provider，已忽略题库功能。可选值: {}",
+                ", ".join(_TIKU_PROVIDERS),
+            )
+            return self
+        new_cls = provider_cls()
         new_cls.config_set(self._conf)
         return new_cls
 
@@ -1603,3 +1602,12 @@ class SiliconFlow(Tiku):
         self.max_retries = int(self._conf.get('max_retries', 3))
         self.retry_delay = float(self._conf.get('retry_delay', 2))
         self._session = requests.Session()
+
+
+# Providers selectable through ``[tiku] provider``.  An explicit table keeps a
+# config value from instantiating arbitrary module globals.
+_TIKU_PROVIDERS = {
+    cls.__name__: cls
+    for cls in (AI, SiliconFlow, TikuYanxi, TikuLike, TikuAdapter)
+}
+_TIKU_PROVIDERS.update(Yanxi=TikuYanxi, Like=TikuLike)

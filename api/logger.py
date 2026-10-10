@@ -12,6 +12,8 @@ from typing import Any
 from loguru import logger
 from tqdm import tqdm
 
+from api.config import env
+
 
 tqdm_stream = sys.stderr
 
@@ -659,13 +661,13 @@ def tqdm_sink(msg):
 
 logger.remove()
 logger.configure(patcher=_sanitize_record)
-level = os.environ.get("CHAOXING_LOG_LEVEL", "INFO").strip().upper()
+level = env("LOG_LEVEL", "INFO").strip().upper()
 if level not in {item.upper() for item in _LOG_LEVELS}:
     level = "INFO"
 logger.add(tqdm_sink, colorize=True, enqueue=False, level=level)
-data_dir = Path(os.environ.get("CHAOXING_DATA_DIR", ".")).expanduser()
+data_dir = Path(env("DATA_DIR", ".")).expanduser()
 data_dir.mkdir(parents=True, exist_ok=True)
-log_path = data_dir / "chaoxing.log"
+log_path = data_dir / "supernova.log"
 logger.add(
     str(log_path),
     rotation="10 MB",

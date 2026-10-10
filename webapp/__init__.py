@@ -1,4 +1,3 @@
-import os
 import threading
 import weakref
 from pathlib import Path
@@ -7,9 +6,12 @@ from typing import Any, Mapping
 from flask import Flask, jsonify, send_from_directory
 from werkzeug.exceptions import HTTPException
 
+from api.config import env
+
 from .account_service import AccountService
 from .answer_connection import AnswerConnectionService
 from .crypto import SecretBox
+from .request_guard import install_request_guard
 from .routes.accounts import NoopTaskGuard, accounts
 from .routes.settings import settings
 from .routes.tasks import tasks
@@ -54,13 +56,13 @@ def _default_task_runner(_context):
 def create_app(test_config: Mapping[str, Any] | None = None) -> Flask:
     app = Flask(__name__, static_folder=None)
     default_static_dir = Path(__file__).resolve().parent.parent / "web" / "dist"
-    configured_data_dir = os.environ.get("CHAOXING_DATA_DIR")
+    configured_data_dir = env("DATA_DIR") or None
     default_data_dir = Path(__file__).resolve().parent.parent / "data"
     data_dir = Path(configured_data_dir or default_data_dir).expanduser().resolve()
     app.config.from_mapping(
         DATA_DIR=data_dir,
         DATABASE_PATH=data_dir / "chaoxing-web.sqlite3",
-        RUNNING_IN_DOCKER=os.environ.get("CHAOXING_RUNNING_IN_DOCKER", False),
+        RUNNING_IN_DOCKER=env("RUNNING_IN_DOCKER") or False,
         STATIC_DIR=default_static_dir,
         MAX_CONTENT_LENGTH=1024 * 1024,
     )
@@ -178,13 +180,14 @@ def create_app(test_config: Mapping[str, Any] | None = None) -> Flask:
         unregister_task_log_sink,
         task_manager,
     )
+    install_request_guard(app)
     app.register_blueprint(accounts)
     app.register_blueprint(settings)
     app.register_blueprint(tasks)
 
     @app.get("/api/health")
     def health():
-        return jsonify(status=True, data={"service": "chaoxing-web"})
+        return jsonify(status=True, data={"service": "supernova-web"})
 
     @app.errorhandler(404)
     def not_found(_error):

@@ -306,7 +306,6 @@ class ChaoxingStudyRunner:
             "endpoint": endpoint,
             "key": getattr(answer, "api_key", None) if answer is not None else None,
             "model": getattr(answer, "model", "") if answer is not None else "",
-            "cover_rate": preferences.answer_cover_rate,
             "submit": str(preferences.answer_auto_submit).lower(),
             "timeout": getattr(answer, "timeout_seconds", 30.0)
             if answer is not None

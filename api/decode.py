@@ -8,7 +8,6 @@
 import json
 import re
 import os
-import sys
 import tempfile
 import threading
 import io
@@ -20,6 +19,7 @@ from bs4 import BeautifulSoup, NavigableString
 from api.font_decoder import FontDecoder
 from api.logger import logger
 from api.config import GlobalConst as gc
+from api.config import env
 from api.cookies import use_cookies
 from api.vision_ocr import (
     _has_task_vision_ocr_context,
@@ -37,7 +37,7 @@ try:
 except ImportError:
     PIL_AVAILABLE = False
 
-ENABLE_LOCAL_OCR = os.environ.get("CHAOXING_ENABLE_OCR", "0").strip().lower() in {"1", "true", "yes", "y", "on"}
+ENABLE_LOCAL_OCR = env("ENABLE_OCR", "0").strip().lower() in {"1", "true", "yes", "y", "on"}
 _PADDLE_OCR_ENGINE = None
 _PADDLE_OCR_INITIALIZED = False
 _PADDLE_OCR_DEVICE = None  # 记录当前 OCR 引擎运行的设备（gpu / cpu）
@@ -65,13 +65,13 @@ def _http_ocr_endpoint() -> str:
                 return str(value).strip()
         # Preserve the CLI's legacy HTTP fallback when external OCR is
         # environment-configured rather than task-configured.
-    return os.environ.get("CHAOXING_OCR_ENDPOINT", "").strip()
+    return env("OCR_ENDPOINT").strip()
 
 
 def _init_paddle_ocr(preferred_device: Optional[str] = None):
     """延迟初始化 PaddleOCR 引擎。
 
-    - 优先使用项目根目录下的 PaddleOCR 仓库（克隆后的代码）；
+    - 需要手动 ``pip install paddleocr``（项目不再附带其源码）；
     - 失败时记录日志并返回 None，不影响主流程。
     """
     global _PADDLE_OCR_ENGINE, _PADDLE_OCR_INITIALIZED, _PADDLE_OCR_DEVICE
@@ -87,11 +87,6 @@ def _init_paddle_ocr(preferred_device: Optional[str] = None):
 
         _PADDLE_OCR_INITIALIZED = True
         try:
-            project_root = os.path.dirname(os.path.dirname(__file__))
-            paddle_root = os.path.join(project_root, "PaddleOCR")
-            if os.path.isdir(paddle_root) and paddle_root not in sys.path:
-                sys.path.append(paddle_root)
-
             from paddleocr import PaddleOCR  # type: ignore
 
             devices_to_try: List[str] = []
@@ -249,9 +244,9 @@ def _ocr_image_to_text(img_url: str, session=None) -> str:
     """可选的 OCR 钩子：将题干中的图片转为接近 LaTeX 的文本。
 
     OCR 识别逻辑：
-    - 若配置了外部 AI 视觉模型（CHAOXING_VISION_OCR_PROVIDER + KEY），则使用外部 OCR，跳过本地
-    - 若未配置外部 OCR，则尝试本地 PaddleOCR（需要 CHAOXING_ENABLE_OCR=1）
-    - 最后可选 HTTP OCR 服务作为兜底（CHAOXING_OCR_ENDPOINT）
+    - 若配置了外部 AI 视觉模型（SUPERNOVA_VISION_OCR_PROVIDER + KEY），则使用外部 OCR，跳过本地
+    - 若未配置外部 OCR，则尝试本地 PaddleOCR（需要 SUPERNOVA_ENABLE_OCR=1）
+    - 最后可选 HTTP OCR 服务作为兜底（SUPERNOVA_OCR_ENDPOINT）
 
     在未开启任何 OCR 时，本函数直接返回空字符串，不影响原有逻辑。
     """

@@ -36,6 +36,20 @@ Persistent data:   named volume supernova-data at /app/data (overridable)
 
 以上答题地址仅为宿主机服务示例。请在全局设置（Settings）中保存自己的答题地址、模型和 API Key。容器只在发出请求时把本机回环地址转换为 `host.docker.internal`，页面和数据库保留用户输入的地址。远程 HTTPS 地址按原值使用。
 
+### 访问限制
+
+工作台没有登录页，因此只接受地址为 `127.0.0.1`、`localhost` 或 `[::1]` 的请求，并拒绝来自其他网站的写操作（返回 `403 origin_forbidden`）。这可以防止你在同一浏览器中打开的恶意网页借道操作本机服务。
+
+如果通过反向代理、域名或局域网地址访问，把这些主机名加入 `.env`（逗号分隔，不含端口），再重启服务：
+
+```dotenv
+SUPERNOVA_ALLOWED_HOSTS=study.example.com,192.168.1.20
+```
+
+放行的地址仍然没有登录保护，请自行在代理层加认证，不要直接暴露到公网。
+
+环境变量统一使用 `SUPERNOVA_` 前缀；旧的 `CHAOXING_` 前缀仍然兼容。
+
 启动并检查服务：
 
 ```bash
@@ -85,8 +99,8 @@ fi
 # the checkpoint.  No database file is copied while a writer is active.
 docker compose run --rm --no-deps web python -c "import sqlite3; from pathlib import Path; p=Path('/app/data/chaoxing-web.sqlite3'); c=sqlite3.connect(p) if p.exists() else None; c and c.execute('PRAGMA wal_checkpoint(TRUNCATE)'); c and c.close()"
 backup_dir="$(mktemp -d "${TMPDIR:-/tmp}/supernova-backup.XXXXXX")"
-docker run --rm -v "${data_volume}:/source:ro" -v "$backup_dir:/backup" alpine tar -czf /backup/chaoxing-data-backup.tgz -C /source .
-echo "Backup written to $backup_dir/chaoxing-data-backup.tgz"
+docker run --rm -v "${data_volume}:/source:ro" -v "$backup_dir:/backup" alpine tar -czf /backup/supernova-data-backup.tgz -C /source .
+echo "Backup written to $backup_dir/supernova-data-backup.tgz"
 ```
 
 恢复时也要先验证备份，再停止服务，避免恢复过程中有进程继续写数据库。下面的示例
@@ -96,7 +110,7 @@ echo "Backup written to $backup_dir/chaoxing-data-backup.tgz"
 
 ```bash
 set -u -o pipefail
-backup_file="/path/to/chaoxing-data-backup.tgz"
+backup_file="/path/to/supernova-data-backup.tgz"
 if [ ! -f "$backup_file" ]; then
   echo "备份文件不存在：$backup_file" >&2
   exit 1
@@ -159,17 +173,17 @@ fi
 if docker run --rm \
   -v "${data_volume}:/source:ro" \
   -v "$safety_dir:/backup" \
-  alpine tar -czf /backup/chaoxing-data-pre-restore.tgz -C /source .; then
+  alpine tar -czf /backup/supernova-data-pre-restore.tgz -C /source .; then
   :
 else
   echo "第二份安全备份创建失败，保留原数据未替换。" >&2
   exit 1
 fi
-if [ ! -s "$safety_dir/chaoxing-data-pre-restore.tgz" ]; then
+if [ ! -s "$safety_dir/supernova-data-pre-restore.tgz" ]; then
   echo "第二份安全备份为空，保留原数据未替换。" >&2
   exit 1
 fi
-echo "第二份安全备份保存在 $safety_dir/chaoxing-data-pre-restore.tgz"
+echo "第二份安全备份保存在 $safety_dir/supernova-data-pre-restore.tgz"
 
 rollback_original() {
   rollback_failed=0
@@ -179,7 +193,7 @@ rollback_original() {
   if ! docker run --rm \
     -v "${data_volume}:/target" \
     -v "$safety_dir:/backup:ro" \
-    alpine sh -c 'set -u; find /target -mindepth 1 -maxdepth 1 -exec rm -rf -- {} + && tar -xzf /backup/chaoxing-data-pre-restore.tgz -C /target'; then
+    alpine sh -c 'set -u; find /target -mindepth 1 -maxdepth 1 -exec rm -rf -- {} + && tar -xzf /backup/supernova-data-pre-restore.tgz -C /target'; then
     rollback_failed=1
   fi
   if ! docker compose run --rm data-init; then
@@ -194,7 +208,7 @@ rollback_original() {
   if [ "$rollback_failed" -eq 0 ]; then
     echo "已用第二份安全备份恢复原数据并重新启动 web。" >&2
   else
-    echo "回滚未能完整验证，请使用 $safety_dir/chaoxing-data-pre-restore.tgz 手工恢复。" >&2
+    echo "回滚未能完整验证，请使用 $safety_dir/supernova-data-pre-restore.tgz 手工恢复。" >&2
   fi
 }
 
@@ -242,7 +256,7 @@ fi
 ```bash
 clean_and_build_portable.bat
 ```
-生成 `chaoxing_portable` 目录，免安装 Python 直接分发。便携版按仓库中锁定的
+生成 `supernova_portable` 目录，免安装 Python 直接分发。便携版按仓库中锁定的
 `requirements.txt` 安装基础依赖；由于 PaddleOCR 的 Windows 二进制依赖无法在本仓库
 中可靠锁定，便携版明确不包含本地 PaddleOCR、`paddlepaddle` 或 `paddlex`，验证码请
 手动输入或配置在线 OCR 服务。
@@ -258,16 +272,16 @@ python main.py -c config.ini -l 课程ID1,课程ID2 -a retry
 ### 配置要点（config.ini）
 
 - **登录**：支持账号密码或 cookies.txt（同后端配置说明）
-- **题库 `[tiku]`**：`provider=Yanxi|Like|TikuAdapter|AI|SiliconFlow`；`cover_rate=0.0-1.0`；`submit=true|false`
+- **题库 `[tiku]`**：`provider=AI|SiliconFlow|TikuYanxi|TikuLike|TikuAdapter`；`submit=true|false`（只有全部题目都有答案时才会提交，否则只保存）
 - **未开放任务处理 `[common]`**：`notopen_action=retry|ask|continue`（命令行可用 `-a/--notopen-action` 覆盖）
-- **通知 `[notify]`**（CLI）：`provider=ServerChan|Qmsg|Bark|Telegram`，按注释填写 `url` / `token` / `chat_id` 等。Web 的账户 `notification_config` 仅作为 legacy/deprecated 数据库/API 兼容字段保留，当前 Web 执行路径不可达，也不会自动推送
+- **通知 `[notification]`**（CLI）：`provider=ServerChan|Qmsg|Bark|Telegram`，填写 `url`，Telegram 另需 `tg_chat_id`。Web 的账户 `notification_config` 仅作为 legacy/deprecated 数据库/API 兼容字段保留，当前 Web 执行路径不可达，也不会自动推送
 - **OCR**：
   - Web 运行链仍兼容读取后端保存的 `ocr_config`，用于任务执行；当前 Web UI 没有账户级 OCR 配置控件
-  - 本地 PaddleOCR：安装 `paddlepaddle`、`paddlex`，并设置 `CHAOXING_ENABLE_OCR=1`
+  - 本地 PaddleOCR：执行 `pip install paddleocr`（会一并安装 `paddlepaddle`），并设置 `SUPERNOVA_ENABLE_OCR=1`
   - 外部大模型（推荐）：
     ```bash
-    export CHAOXING_VISION_OCR_PROVIDER=openai
-    export CHAOXING_VISION_OCR_KEY="YOUR_VISION_KEY"
-    export CHAOXING_VISION_OCR_MODEL=gpt-4o
-    # 可选：CHAOXING_VISION_OCR_ENDPOINT, CHAOXING_VISION_OCR_PROMPT
+    export SUPERNOVA_VISION_OCR_PROVIDER=openai
+    export SUPERNOVA_VISION_OCR_KEY="YOUR_VISION_KEY"
+    export SUPERNOVA_VISION_OCR_MODEL=gpt-4o
+    # 可选：SUPERNOVA_VISION_OCR_ENDPOINT, SUPERNOVA_VISION_OCR_PROMPT
     ```

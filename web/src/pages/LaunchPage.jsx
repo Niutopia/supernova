@@ -15,7 +15,6 @@ const DEFAULT_PREFERENCES = {
   jobs: 4,
   notopen_action: 'retry',
   answer_enabled: false,
-  answer_cover_rate: 0.9,
   answer_auto_submit: false,
 }
 
@@ -65,7 +64,6 @@ function asPreferences(value) {
     jobs: source.jobs ?? DEFAULT_PREFERENCES.jobs,
     notopen_action: source.notopen_action ?? DEFAULT_PREFERENCES.notopen_action,
     answer_enabled: source.answer_enabled ?? DEFAULT_PREFERENCES.answer_enabled,
-    answer_cover_rate: source.answer_cover_rate ?? DEFAULT_PREFERENCES.answer_cover_rate,
     answer_auto_submit: source.answer_auto_submit ?? DEFAULT_PREFERENCES.answer_auto_submit,
   }
 }
@@ -131,10 +129,6 @@ function preferencePayload(preferences) {
     jobs: Math.trunc(numericValue(preferences.jobs, DEFAULT_PREFERENCES.jobs)),
     notopen_action: preferences.notopen_action,
     answer_enabled: Boolean(preferences.answer_enabled),
-    answer_cover_rate: numericValue(
-      preferences.answer_cover_rate,
-      DEFAULT_PREFERENCES.answer_cover_rate,
-    ),
     answer_auto_submit: Boolean(preferences.answer_auto_submit),
   }
 }
@@ -400,8 +394,6 @@ function LaunchPage({
     if (!/^\d+$/.test(String(preferences.jobs)) || Number(preferences.jobs) < 1 || Number(preferences.jobs) > 10) {
       return '章节并发数需为 1 到 10 的整数'
     }
-    const coverRate = numericValue(preferences.answer_cover_rate, Number.NaN)
-    if (!Number.isFinite(coverRate) || coverRate < 0 || coverRate > 1) return '答题覆盖率需在 0 到 1 之间'
     if (connectionBlocked) return '请先在设置中测试答题连接'
     return ''
   }
@@ -638,19 +630,6 @@ function LaunchPage({
 
               {preferences.answer_enabled ? (
                 <>
-                  <Field label="答题覆盖率" htmlFor="launch-cover-rate" description="0 到 1 之间的小数。">
-                    <Input
-                      id="launch-cover-rate"
-                      type="number"
-                      inputMode="decimal"
-                      min="0"
-                      max="1"
-                      step="0.05"
-                      value={preferenceNumber(preferences.answer_cover_rate, DEFAULT_PREFERENCES.answer_cover_rate)}
-                      onChange={updatePreference('answer_cover_rate')}
-                      disabled={launchControlsDisabled}
-                    />
-                  </Field>
                   <label className="touch-target flex min-h-11 cursor-pointer items-center gap-3 text-sm">
                     <input
                       type="checkbox"

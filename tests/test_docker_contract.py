@@ -15,12 +15,12 @@ def test_compose_binds_only_localhost_and_persists_data():
         web["depends_on"]["data-init"]["condition"]
         == "service_completed_successfully"
     )
-    assert "chaoxing-data:/app/data" in web["volumes"]
+    assert "supernova-data:/app/data" in web["volumes"]
     assert "host.docker.internal:host-gateway" in web["extra_hosts"]
     assert web["restart"] == "unless-stopped"
     assert web["healthcheck"]["test"][:3] == ["CMD", "python", "-c"]
     assert "/api/health" in web["healthcheck"]["test"][3]
-    assert "chaoxing-data" in compose["volumes"]
+    assert "supernova-data" in compose["volumes"]
 
 
 def test_dockerfile_builds_frontend_and_runs_one_gunicorn_worker():
@@ -37,7 +37,7 @@ def test_dockerfile_builds_frontend_and_runs_one_gunicorn_worker():
 def test_app_factory_enables_loopback_translation_inside_docker(
     monkeypatch, tmp_path
 ):
-    monkeypatch.setenv("CHAOXING_RUNNING_IN_DOCKER", "1")
+    monkeypatch.setenv("SUPERNOVA_RUNNING_IN_DOCKER", "1")
 
     from webapp import create_app
 
@@ -55,7 +55,7 @@ def test_dockerignore_excludes_data_backups_and_operations_uses_external_backup_
         for line in Path(".dockerignore").read_text().splitlines()
         if line.strip() and not line.lstrip().startswith("#")
     }
-    assert "chaoxing-data-backup.tgz" in dockerignore
+    assert "supernova-data-backup.tgz" in dockerignore
     assert "*.tgz" in dockerignore
     assert "*.tar.gz" in dockerignore
 
@@ -81,8 +81,8 @@ def test_env_example_does_not_advertise_unwired_account_limit():
 
 def test_operations_uses_shell_safe_ocr_placeholder_and_current_docker_troubleshooting():
     readme = Path("docs/operations.md").read_text()
-    assert 'export CHAOXING_VISION_OCR_KEY="YOUR_VISION_KEY"' in readme
-    assert "export CHAOXING_VISION_OCR_KEY=<" not in readme
+    assert 'export SUPERNOVA_VISION_OCR_KEY="YOUR_VISION_KEY"' in readme
+    assert "export SUPERNOVA_VISION_OCR_KEY=<" not in readme
     assert "netstat -ano | findstr :5000" not in readme
     assert "findstr :3000" not in readme
     assert "/config/config.ini" not in readme
@@ -96,14 +96,14 @@ def test_docker_contract_keeps_runtime_environment_explicit_and_excludes_portabl
     environment = compose["services"]["web"]["environment"]
     if isinstance(environment, list):
         environment = {item.split("=", 1)[0]: item.split("=", 1)[1] for item in environment}
-    assert environment["CHAOXING_DATA_DIR"] == "/app/data"
-    assert environment["CHAOXING_RUNNING_IN_DOCKER"] == "1"
+    assert environment["SUPERNOVA_DATA_DIR"] == "/app/data"
+    assert environment["SUPERNOVA_RUNNING_IN_DOCKER"] == "1"
 
     dockerignore = Path(".dockerignore").read_text()
     assert "*.zip" in dockerignore
     assert "**/*.zip" in dockerignore
     assert "portable/" in dockerignore
-    assert "chaoxing_portable/" in dockerignore
+    assert "supernova_portable/" in dockerignore
     assert "portable_build/" in dockerignore
 
 
@@ -204,7 +204,7 @@ def test_restore_stages_and_validates_archive_before_stopping_web_and_replacing_
     assert extract < required_key < stop
     assert stop < safety_backup < replace
     assert 'rm -rf -- "$safety_dir"' not in restore
-    assert "chaoxing-data-pre-restore.tgz" in restore
+    assert "supernova-data-pre-restore.tgz" in restore
     assert "docker compose down -v" not in restore
     assert "docker compose down -v" not in readme
 
@@ -441,7 +441,7 @@ def test_portable_build_rejects_local_embed_without_python313_runtime_marker(nam
 def test_restore_has_explicit_failure_rollback_after_second_backup():
     readme = Path("docs/operations.md").read_text()
     restore = _restore_section(readme)
-    safety = restore.index("chaoxing-data-pre-restore.tgz")
+    safety = restore.index("supernova-data-pre-restore.tgz")
     replace = restore.index(
         'if docker run --rm \\\n'
         '  -v "${data_volume}:/target"',
@@ -474,8 +474,8 @@ def test_restore_has_explicit_failure_rollback_after_second_backup():
         assert re.search(r"(?m)^\s*fail_after_backup\b", failure_block), branch_name
 
     rollback = restore[rollback_definition:replace]
-    assert rollback.index("docker compose stop web") < rollback.index("tar -xzf /backup/chaoxing-data-pre-restore.tgz")
-    assert rollback.index("tar -xzf /backup/chaoxing-data-pre-restore.tgz") < rollback.index("docker compose run --rm data-init")
+    assert rollback.index("docker compose stop web") < rollback.index("tar -xzf /backup/supernova-data-pre-restore.tgz")
+    assert rollback.index("tar -xzf /backup/supernova-data-pre-restore.tgz") < rollback.index("docker compose run --rm data-init")
     assert rollback.index("docker compose run --rm data-init") < rollback.index("docker compose up -d web")
     assert "/backup:ro" in rollback
 

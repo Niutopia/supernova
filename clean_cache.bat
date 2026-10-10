@@ -3,7 +3,7 @@ chcp 65001 >nul
 setlocal enabledelayedexpansion
 
 echo ╔══════════════════════════════════════════════════════════════╗
-echo ║           超星学习通自动化工具 - 清理缓存                   ║
+echo ║           超新星 · 学习助手 - 清理缓存                   ║
 echo ╚══════════════════════════════════════════════════════════════╝
 echo.
 
@@ -35,9 +35,9 @@ for /r "%SCRIPT_DIR%" %%f in (*.pyc) do (
 
 REM 清理日志文件
 echo [3] 清理日志文件...
-if exist "%SCRIPT_DIR%chaoxing.log" (
-    echo    删除: chaoxing.log
-    del /q "%SCRIPT_DIR%chaoxing.log" 2>nul
+if exist "%SCRIPT_DIR%supernova.log" (
+    echo    删除: supernova.log
+    del /q "%SCRIPT_DIR%supernova.log" 2>nul
     set /a COUNT+=1
 )
 for %%f in ("%SCRIPT_DIR%*.log") do (
@@ -73,14 +73,14 @@ if exist "%SCRIPT_DIR%config.ini" (
 
 REM 清理旧的便携版
 echo [6] 清理旧的便携版...
-if exist "%SCRIPT_DIR%chaoxing_portable" (
-    echo    删除: chaoxing_portable 目录
-    rd /s /q "%SCRIPT_DIR%chaoxing_portable" 2>nul
+if exist "%SCRIPT_DIR%supernova_portable" (
+    echo    删除: supernova_portable 目录
+    rd /s /q "%SCRIPT_DIR%supernova_portable" 2>nul
     set /a COUNT+=1
 )
-if exist "%SCRIPT_DIR%chaoxing_portable.zip" (
-    echo    删除: chaoxing_portable.zip
-    del /q "%SCRIPT_DIR%chaoxing_portable.zip" 2>nul
+if exist "%SCRIPT_DIR%supernova_portable.zip" (
+    echo    删除: supernova_portable.zip
+    del /q "%SCRIPT_DIR%supernova_portable.zip" 2>nul
     set /a COUNT+=1
 )
 if exist "%SCRIPT_DIR%portable_build" (
@@ -129,7 +129,7 @@ echo ║    - *.log 日志文件                                          ║
 echo ║    - cache.json 缓存文件                                     ║
 echo ║    - cookies.txt 登录信息                                    ║
 echo ║    - config.ini 配置文件                                     ║
-echo ║    - chaoxing_portable 目录和 zip                            ║
+echo ║    - supernova_portable 目录和 zip                            ║
 echo ║    - 前端临时缓存                                            ║
 echo ╚══════════════════════════════════════════════════════════════╝
 echo.

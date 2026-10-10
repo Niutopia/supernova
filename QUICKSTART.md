@@ -78,7 +78,7 @@ npm run dev
 | 开发后端 | [http://localhost:5000](http://localhost:5000) |
 | Docker 完整应用 | [http://127.0.0.1:5001](http://127.0.0.1:5001) |
 
-开发前端会代理 `/api` 请求到后端。不设置 `CHAOXING_DATA_DIR` 时，开发数据存放在项目的 `data/` 中，与 Docker 命名卷相互独立。
+开发前端会代理 `/api` 请求到后端。不设置 `SUPERNOVA_DATA_DIR` 时，开发数据存放在项目的 `data/` 中，与 Docker 命名卷相互独立。
 
 Windows 安装 Python 和 Node.js 后，可在项目目录运行 `start.bat`。该脚本启动后端与 Vite 开发服务，打开 3000 端口。便携打包及 CLI 见 [进阶说明](docs/operations.md)。
 

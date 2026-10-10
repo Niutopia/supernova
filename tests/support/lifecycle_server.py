@@ -18,7 +18,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 DATA = Path(sys.argv[1]).resolve()
 DATA.mkdir(parents=True, exist_ok=True)
-os.environ["CHAOXING_DATA_DIR"] = str(DATA)
+os.environ["SUPERNOVA_DATA_DIR"] = str(DATA)
 
 import httpx
 import requests

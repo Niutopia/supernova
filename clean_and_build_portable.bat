@@ -3,13 +3,13 @@ chcp 65001 >nul
 setlocal enabledelayedexpansion
 
 echo ╔══════════════════════════════════════════════════════════════╗
-echo ║      超星学习通自动化工具 - 清理缓存并打包便携版            ║
+echo ║      超新星 · 学习助手 - 清理缓存并打包便携版            ║
 echo ╚══════════════════════════════════════════════════════════════╝
 echo.
 
 set "SCRIPT_DIR=%~dp0"
 set "BUILD_DIR=%SCRIPT_DIR%portable_build"
-set "DIST_DIR=%SCRIPT_DIR%chaoxing_portable"
+set "DIST_DIR=%SCRIPT_DIR%supernova_portable"
 set "PYTHON_VERSION=3.13.7"
 set "PYTHON_EMBED_URL=https://www.python.org/ftp/python/%PYTHON_VERSION%/python-%PYTHON_VERSION%-embed-amd64.zip"
 set "PIP_BOOTSTRAP_VERSION=26.2.1"
@@ -45,9 +45,9 @@ del /s /q "%SCRIPT_DIR%*.pyc" 2>nul
 
 REM 清理日志文件
 echo    清理日志文件...
-if exist "%SCRIPT_DIR%chaoxing.log" (
-    echo    删除: chaoxing.log
-    del /q "%SCRIPT_DIR%chaoxing.log" 2>nul
+if exist "%SCRIPT_DIR%supernova.log" (
+    echo    删除: supernova.log
+    del /q "%SCRIPT_DIR%supernova.log" 2>nul
 )
 if exist "%SCRIPT_DIR%*.log" del /q "%SCRIPT_DIR%*.log" 2>nul
 
@@ -74,12 +74,12 @@ if exist "%SCRIPT_DIR%config.ini" (
 REM 清理旧的便携版
 echo    清理旧的便携版...
 if exist "%DIST_DIR%" (
-    echo    删除: chaoxing_portable 目录
+    echo    删除: supernova_portable 目录
     rd /s /q "%DIST_DIR%" 2>nul
 )
-if exist "%SCRIPT_DIR%chaoxing_portable.zip" (
-    echo    删除: chaoxing_portable.zip
-    del /q "%SCRIPT_DIR%chaoxing_portable.zip" 2>nul
+if exist "%SCRIPT_DIR%supernova_portable.zip" (
+    echo    删除: supernova_portable.zip
+    del /q "%SCRIPT_DIR%supernova_portable.zip" 2>nul
 )
 
 REM 清理构建临时目录
@@ -284,13 +284,13 @@ echo setlocal enabledelayedexpansion
 echo.
 echo set "SCRIPT_DIR=%%~dp0"
 echo set "PYTHON_EXE=%%SCRIPT_DIR%%python\python.exe"
-echo set "CHAOXING_ENABLE_OCR=0"
+echo set "SUPERNOVA_ENABLE_OCR=0"
 echo.
 echo pushd "%%SCRIPT_DIR%%"
 echo.
 echo echo.
 echo echo ========================================================
-echo echo           超星学习通自动化工具 - 便携版
+echo echo           超新星 · 学习助手 - 便携版
 echo echo ========================================================
 echo echo.
 echo.
@@ -318,13 +318,13 @@ echo setlocal
 echo.
 echo set "SCRIPT_DIR=%%~dp0"
 echo set "PYTHON_EXE=%%SCRIPT_DIR%%python\python.exe"
-echo set "CHAOXING_ENABLE_OCR=0"
+echo set "SUPERNOVA_ENABLE_OCR=0"
 echo.
 echo pushd "%%SCRIPT_DIR%%"
 echo.
 echo echo.
 echo echo ========================================================
-echo echo         超星学习通自动化工具 - 命令行模式
+echo echo         超新星 · 学习助手 - 命令行模式
 echo echo ========================================================
 echo echo.
 echo "%%PYTHON_EXE%%" main.py
@@ -341,13 +341,13 @@ echo setlocal
 echo.
 echo set "SCRIPT_DIR=%%~dp0"
 echo set "PYTHON_EXE=%%SCRIPT_DIR%%python\python.exe"
-echo set "CHAOXING_ENABLE_OCR=0"
+echo set "SUPERNOVA_ENABLE_OCR=0"
 echo.
 echo pushd "%%SCRIPT_DIR%%"
 echo.
 echo echo.
 echo echo ========================================================
-echo echo           超星学习通自动化工具 - Web 模式
+echo echo           超新星 · 学习助手 - Web 模式
 echo echo ========================================================
 echo echo.
 echo echo [INFO] 正在打开浏览器: http://localhost:5000
@@ -361,7 +361,7 @@ echo pause
 
 REM 创建 README
 set "README_FILE=%DIST_DIR%\README.md"
-echo # 超星学习通自动化工具 - 便携版> "%README_FILE%"
+echo # 超新星 · 学习助手 - 便携版> "%README_FILE%"
 echo.>> "%README_FILE%"
 echo ## 快速开始>> "%README_FILE%"
 echo.>> "%README_FILE%"
@@ -405,7 +405,7 @@ echo.>> "%README_FILE%"
 echo ## 目录结构>> "%README_FILE%"
 echo.>> "%README_FILE%"
 echo ```>> "%README_FILE%"
-echo chaoxing_portable/>> "%README_FILE%"
+echo supernova_portable/>> "%README_FILE%"
 echo ├── python/          # 嵌入式 Python 运行时>> "%README_FILE%"
 echo ├── api/             # 后端 API 模块>> "%README_FILE%"
 echo ├── web/dist/        # 前端静态文件（如果有）>> "%README_FILE%"
@@ -424,7 +424,7 @@ echo.
 echo ╔══════════════════════════════════════════════════════════════╗
 echo ║                      打包完成！                              ║
 echo ╠══════════════════════════════════════════════════════════════╣
-echo ║  输出目录: chaoxing_portable                                 ║
+echo ║  输出目录: supernova_portable                                 ║
 echo ╠══════════════════════════════════════════════════════════════╣
 if "%FRONTEND_OK%"=="1" (
 echo ║  [√] Web 前端: 已包含                                        ║
@@ -441,7 +441,7 @@ echo ║    - *.log 日志文件 / cache.json 缓存                        ║
 echo ║    - cookies.txt / config.ini (用户敏感信息)                 ║
 echo ╠══════════════════════════════════════════════════════════════╣
 echo ║  使用方法:                                                   ║
-echo ║    1. 将 chaoxing_portable 文件夹复制到任意位置              ║
+echo ║    1. 将 supernova_portable 文件夹复制到任意位置              ║
 echo ║    2. 双击 "启动.bat" 运行程序                               ║
 echo ║    3. 首次使用请将 config.ini.example 复制为 config.ini      ║
 echo ╚══════════════════════════════════════════════════════════════╝
@@ -449,14 +449,14 @@ echo.
 
 REM 自动打包为 zip
 echo 正在创建 ZIP 文件...
-powershell -Command "Compress-Archive -Path '%DIST_DIR%\*' -DestinationPath '%SCRIPT_DIR%chaoxing_portable.zip' -Force"
+powershell -Command "Compress-Archive -Path '%DIST_DIR%\*' -DestinationPath '%SCRIPT_DIR%supernova_portable.zip' -Force"
 if errorlevel 1 (
     echo    ❌ ZIP 创建失败
 ) else (
-    echo    ✅ 已创建: chaoxing_portable.zip
+    echo    ✅ 已创建: supernova_portable.zip
     
     REM 显示文件大小
-    for %%A in ("%SCRIPT_DIR%chaoxing_portable.zip") do (
+    for %%A in ("%SCRIPT_DIR%supernova_portable.zip") do (
         set "SIZE=%%~zA"
         set /a "SIZE_MB=!SIZE! / 1048576"
         echo    文件大小: !SIZE_MB! MB

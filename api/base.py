@@ -504,7 +504,6 @@ class Chaoxing:
             self.tiku.session = self.session
         self.cookie_update_callback = cookie_update_callback
         self.kwargs = kwargs
-        self.rollback_times = 0
         self.rate_limiter = RateLimiter(0.5) # 其他接口速率限制比较松
         self.video_log_limiter = RateLimiter(2) # 上报进度极其容易卡验证码，限制2s一次
 
@@ -1623,11 +1622,10 @@ class Chaoxing:
             questions["pyFlag"] = "1"
         elif self.tiku.get_submit_params() == "1":
             questions["pyFlag"] = "1"
-        elif cover_rate >= self.tiku.COVER_RATE * 100 or self.rollback_times >= 1:
-            questions["pyFlag"] = ""
         else:
-            questions["pyFlag"] = "1"
-            logger.info(f"章节检测题库覆盖率低于{self.tiku.COVER_RATE * 100:.0f}% ，不予提交")
+            # Every question is covered at this point, so no coverage
+            # threshold can change the outcome.
+            questions["pyFlag"] = ""
 
         def _fill_answers_into_form(is_save: bool):
             """将每道题的 answerField 写回提交表单。

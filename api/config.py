@@ -17,3 +17,15 @@ class GlobalConst:
     }
 
     THRESHOLD = 1
+
+
+def env(name: str, default: str = "") -> str:
+    """Read ``SUPERNOVA_<name>``, falling back to the legacy ``CHAOXING_<name>``."""
+
+    import os
+
+    for prefix in ("SUPERNOVA_", "CHAOXING_"):
+        value = os.environ.get(prefix + name)
+        if value is not None:
+            return value
+    return default

@@ -3,7 +3,7 @@ setlocal EnableExtensions EnableDelayedExpansion
 chcp 65001 >nul
 
 echo ========================================
-echo   超星学习通 - Web前端启动脚本
+echo   超新星 · 学习助手 - Web前端启动脚本
 echo ========================================
 echo.
 
@@ -49,9 +49,9 @@ echo    ✅ 前端依赖已与 package-lock.json 同步
 echo.
 
 echo [3/3] 启动前后端服务...
-start "超星后端服务" cmd /k "cd /d ""%~dp0"" ^&^& python app.py"
+start "超新星后端服务" cmd /k "cd /d ""%~dp0"" ^&^& python app.py"
 timeout /t 3 /nobreak >nul
-start "超星前端服务" cmd /k "cd /d ""%~dp0web"" ^&^& npm run dev"
+start "超新星前端服务" cmd /k "cd /d ""%~dp0web"" ^&^& npm run dev"
 
 echo.
 echo ========================================
@@ -60,7 +60,7 @@ echo   后端地址: http://localhost:5000
 echo   前端地址: http://localhost:3000
 echo ========================================
 echo.
-echo 本脚本不会自动安装 PaddleOCR；如需本地 OCR，请按 README 手动安装并设置 CHAOXING_ENABLE_OCR=1。
+echo 本脚本不会自动安装 PaddleOCR；如需本地 OCR，请按 README 手动安装并设置 SUPERNOVA_ENABLE_OCR=1。
 echo 请等待浏览器自动打开...
 timeout /t 5 /nobreak >nul
 start http://localhost:3000

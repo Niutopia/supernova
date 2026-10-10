@@ -37,14 +37,14 @@ class Server:
         self.process = subprocess.Popen(
             [sys.executable, str(ROOT / "tests/support/lifecycle_server.py"),
              str(self.directory), str(self.ready)], cwd=ROOT,
-            env={**os.environ, "CHAOXING_DATA_DIR": str(self.directory)},
+            env={**os.environ, "SUPERNOVA_DATA_DIR": str(self.directory)},
             stdout=self.output, stderr=subprocess.STDOUT,
         )
         eventually(lambda: (self.process.poll(), self.ready.exists()),
                    lambda state: state[0] is not None or state[1])
         assert self.process.poll() is None, (self.directory / "server-output.log").read_text()
         self.url = self.ready.read_text()
-        assert self.api("GET", "/api/health")["service"] == "chaoxing-web"
+        assert self.api("GET", "/api/health")["service"] == "supernova-web"
 
     def stop(self):
         if self.process is not None:
@@ -138,7 +138,7 @@ def test_submission_recovery_cancel_and_process_restart(tmp_path, interruption):
         server.start()
         assert server.api("GET", f"/api/tasks/{complete_id}/details")["answer_report"] == details["answer_report"]
         assert len(server.api("GET", "/api/tasks")) == 3
-        diagnostic = (tmp_path / "chaoxing.log").read_text()
+        diagnostic = (tmp_path / "supernova.log").read_text()
         assert '"event":"request_exception","action":"submit"' in diagnostic
         assert '"event":"existing_submission_preserved"' in diagnostic
         assert '"event":"refresh_completed"' in diagnostic

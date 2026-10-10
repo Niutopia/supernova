@@ -80,7 +80,7 @@ saves
 # Volume backups must never be sent in the build context.  The exact default
 # filename is covered alongside the general archive patterns for renamed or
 # nested copies.
-chaoxing-data-backup.tgz
+supernova-data-backup.tgz
 *.tgz
 **/*.tgz
 *.tar.gz
@@ -94,20 +94,12 @@ chaoxing-data-backup.tgz
 **/*.zip
 portable/
 **/portable/
-chaoxing_portable/
-**/chaoxing_portable/
+supernova_portable/
+**/supernova_portable/
 portable_build/
 **/portable_build/
 build_portable/
 **/build_portable/
-
-# Local PaddleOCR is an optional, explicitly enabled code path.  The default
-# Docker Web deployment uses external OCR and does not install PaddlePaddle,
-# so the source checkout and its model/development trees are not image input.
-# Keep this list explicit: it documents the optional boundary while avoiding
-# the ~139 MB repository-only OCR payload in the Docker build context.
-PaddleOCR/
-PaddleOCR/**
 
 # Local backups and personal operational reports.
 .backups/

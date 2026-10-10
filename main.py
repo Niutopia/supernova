@@ -10,7 +10,7 @@ import time
 import traceback
 from concurrent.futures.thread import ThreadPoolExecutor
 from concurrent.futures import TimeoutError as FutureTimeoutError
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from collections.abc import Mapping
 from queue import PriorityQueue
 from queue import Empty
@@ -406,7 +406,7 @@ def load_config_from_file(config_path):
     if config.has_section("tiku"):
         tiku_config = dict(config.items("tiku"))
         # 处理数值类型转换
-        for key in ["delay", "cover_rate"]:
+        for key in ["delay"]:
             if key in tiku_config:
                 tiku_config[key] = float(tiku_config[key])
 
@@ -510,6 +510,9 @@ def init_chaoxing(
     return chaoxing
 
 
+_IDEMPOTENT_JOB_TYPES = frozenset({"video", "document", "read"})
+
+
 def process_job(
     chaoxing: Chaoxing,
     course: dict,
@@ -519,7 +522,39 @@ def process_job(
     progress_callback=None,
     config: Mapping[str, Any] | None = None,
 ) -> StudyResult:
-    """处理单个任务点"""
+    """处理单个任务点
+
+    Video/document/read jobs only report progress and are safe to repeat, so
+    an unexpected error there fails just that job.  Quiz errors still
+    propagate: a submit whose response was lost must stop the course rather
+    than risk a second submission.
+    """
+    if job.get("type") not in _IDEMPOTENT_JOB_TYPES:
+        return _process_job(
+            chaoxing, course, job, job_info, speed, progress_callback, config
+        )
+    try:
+        return _process_job(
+            chaoxing, course, job, job_info, speed, progress_callback, config
+        )
+    except StudyCancelled:
+        raise
+    except Exception:
+        job["reason"] = "任务点处理发生异常"
+        job["next_action"] = "查看运行日志，并在学习通确认该任务点是否可访问。"
+        logger.error("任务点处理失败，已跳过（异常内容已省略）")
+        return StudyResult.ERROR
+
+
+def _process_job(
+    chaoxing: Chaoxing,
+    course: dict,
+    job: dict,
+    job_info: dict,
+    speed: float,
+    progress_callback=None,
+    config: Mapping[str, Any] | None = None,
+) -> StudyResult:
     if config is None and isinstance(progress_callback, Mapping) and (
         "cancel_event" in progress_callback or "task_id" in progress_callback
     ):
@@ -660,6 +695,11 @@ class ChapterTask:
     point: dict[str, Any]
     result: ChapterResult = ChapterResult.PENDING
     tries: int = 0
+    # Backoff state for a locked chapter waiting on another chapter.  A retry
+    # becomes due at ``not_before`` or as soon as any other chapter settles.
+    not_before: float = field(default=0.0, compare=False)
+    wait_generation: int = field(default=0, compare=False)
+    not_open_waits: int = field(default=0, compare=False)
 
 class JobProcessor:
     _WORKER_CALLBACK_NAMES = frozenset(
@@ -679,11 +719,12 @@ class JobProcessor:
         self.course = course
         self.speed = config["speed"]
         self.max_tries = 5
+        # Bumped whenever a chapter settles, which is what can unlock others.
+        self._chapter_generation = 0
         self.tasks = tasks
         self.failed_tasks: list[ChapterTask] = []
         self.task_queue: PriorityQueue[ChapterTask] = PriorityQueue()
         self.retry_queue: PriorityQueue[ChapterTask] = PriorityQueue()
-        self.wait_queue: PriorityQueue[ChapterTask] = PriorityQueue()
         self.threads: list[threading.Thread] = []
         self.retry_thread_handle: threading.Thread | None = None
         self.worker_num = config["jobs"]
@@ -733,6 +774,8 @@ class JobProcessor:
             self.config[name] = guarded_callback
 
     _WORKER_JOIN_TIMEOUT = 0.5
+    _NOT_OPEN_RETRY_BASE = 10.0
+    _NOT_OPEN_RETRY_MAX = 120.0
 
     def _record_worker_error(self, error: BaseException) -> None:
         """Publish a worker failure without logging its raw exception text."""
@@ -768,6 +811,18 @@ class JobProcessor:
                 return False
             self.retry_queue.put(task)
             return True
+
+    def _chapter_settled(self) -> None:
+        with self._lifecycle_lock:
+            self._chapter_generation += 1
+
+    def _retry_due(self, task: ChapterTask) -> bool:
+        with self._lifecycle_lock:
+            generation = self._chapter_generation
+        return (
+            task.wait_generation != generation
+            or time.monotonic() >= task.not_before
+        )
 
     def _requeue_retry(self, task: ChapterTask) -> bool:
         """Move one retry back to work atomically with the stop transition."""
@@ -899,6 +954,8 @@ class JobProcessor:
                 return
 
             task_finished = False
+            with self._lifecycle_lock:
+                generation_before = self._chapter_generation
             try:
                 # 处理单个章节，并在需要时通过 config 中的回调上报章节完成进度
                 raise_if_cancelled(self.config)
@@ -953,7 +1010,17 @@ class JobProcessor:
                             task_finished = True
                             continue
 
-                        # self.wait_queue.put(task)
+                        if awaiting_prerequisite:
+                            # Re-check slowly rather than polling the platform
+                            # every second; another chapter settling wakes it.
+                            task.not_open_waits += 1
+                            task.not_before = time.monotonic() + min(
+                                self._NOT_OPEN_RETRY_BASE * 2 ** (task.not_open_waits - 1),
+                                self._NOT_OPEN_RETRY_MAX,
+                            )
+                            task.wait_generation = generation_before
+                        else:
+                            task.not_before = 0.0
                         if not self._enqueue_retry(task):
                             self.task_queue.task_done()
                             task_finished = True
@@ -1000,6 +1067,9 @@ class JobProcessor:
                     self.task_queue.task_done()
                 self._record_worker_error(exc)
                 return
+            finally:
+                if task_finished:
+                    self._chapter_settled()
 
     def retry_thread(self):
         try:
@@ -1009,32 +1079,33 @@ class JobProcessor:
                 except StudyCancelled:
                     return
                 try:
-                    task = self.retry_queue.get(timeout=0.1)
+                    pending = [self.retry_queue.get(timeout=0.1)]
                 except Empty:
                     if self._worker_stop_event.wait(0.1):
                         return
                     continue
-                moved = False
-                try:
-                    raise_if_cancelled(self.config)
-                    if not self._requeue_retry(task):
-                        return
-                    moved = True
-                finally:
+                while True:
+                    try:
+                        pending.append(self.retry_queue.get_nowait())
+                    except Empty:
+                        break
+                for task in pending:
+                    # Both helpers refuse once stop/cancel wins, so every
+                    # drained item is balanced here without raising.
+                    if self._retry_due(task):
+                        moved = self._requeue_retry(task)
+                    else:
+                        moved = self._enqueue_retry(task)
                     self.retry_queue.task_done()
                     if not moved:
                         # The retry item owns the original task_queue count;
                         # balance it when cancellation prevents requeueing.
                         self.task_queue.task_done()
                 cancel_event = self.config.get("cancel_event")
-                if cancel_event is not None:
-                    if self._worker_stop_event.wait(1):
-                        return
-                    if cancel_event.is_set():
-                        raise StudyCancelled()
-                else:
-                    if self._worker_stop_event.wait(1):
-                        return
+                if self._worker_stop_event.wait(1):
+                    return
+                if cancel_event is not None and cancel_event.is_set():
+                    raise StudyCancelled()
         except StudyCancelled:
             return
         except ShutDown:

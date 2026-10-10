@@ -1,5 +1,6 @@
-# 超星学习通自动化工具 - 配置文件示例
+# 超新星 · 学习助手 - 命令行配置文件示例
 # 使用方法：复制此文件为 config.ini，然后修改下面的配置
+# Web 工作台不读取此文件，账户与答题连接在页面中设置。
 
 [common]
 # 手机号（必填）
@@ -21,39 +22,43 @@ speed = 1.0
 # 同时进行的章节数
 jobs = 4
 
-# 遇到未开放章节的处理方式: retry-重试, continue-跳过
+# 遇到未开放章节的处理方式: retry-稍后重试, continue-跳过
 notopen_action = retry
 
 
 [tiku]
-# 题库类型: ai, disable
-# ai - 使用 AI 大模型答题
-# disable - 禁用题库（不自动答题）
-type = ai
+# 题库提供方: AI, SiliconFlow, TikuYanxi, TikuLike, TikuAdapter
+# 留空则不自动答题
+provider = AI
 
-# AI 题库配置（当 type=ai 时生效）
-# API 端点
-ai_endpoint = https://api.openai.com/v1
+# 是否自动提交: true-全部题目都有答案时提交, false-只保存不提交
+submit = false
+
+# AI 题库配置（provider = AI 时生效，兼容 OpenAI Chat Completions）
+# 完整的接口地址
+endpoint = https://api.openai.com/v1/chat/completions
 
 # API 密钥
-ai_key = 
+key = 
 
 # 模型名称
-ai_model = gpt-4o-mini
+model = gpt-4o-mini
 
 # 请求间隔（秒）
 min_interval_seconds = 3
 
-# 题库覆盖率阈值（0-1），低于此值不提交答案
-cover_rate = 0.6
+# 判断题答案映射（逗号分隔，可选）
+true_list = 正确,对,√,是
+false_list = 错误,错,×,否
 
 
 [notification]
-# 通知类型: disable, pushplus, bark, dingtalk, feishu, wechat
-type = disable
+# 通知提供方: ServerChan, Qmsg, Bark, Telegram
+# 留空则不发送通知
+provider = 
 
-# PushPlus Token（当 type=pushplus 时）
-pushplus_token = 
+# 推送地址（四种通知方式都需要）
+url = 
 
-# Bark 推送地址（当 type=bark 时）
-bark_url = 
+# Telegram 聊天 ID（provider = Telegram 时需要）
+tg_chat_id = 

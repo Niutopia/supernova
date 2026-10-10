@@ -146,6 +146,7 @@ cookies.txt
 .config.ini
 config.ini
 chaoxing.log
+supernova.log
 config*.ini
 .chaoxing.log
 ./config.ini
@@ -157,8 +158,8 @@ cache.json
 web_config.json
 
 # Portable build
-chaoxing_portable/
-chaoxing_portable.zip
+supernova_portable/
+supernova_portable.zip
 portable_build/
 python-embed.zip
 get-pip.py

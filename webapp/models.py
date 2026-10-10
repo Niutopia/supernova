@@ -53,6 +53,8 @@ class AccountPreferences:
     jobs: int = 4
     notopen_action: Literal["retry", "continue"] = "retry"
     answer_enabled: bool = False
+    # Retained only so stored rows and older clients stay valid; quizzes are
+    # submitted only when every question has an answer.
     answer_cover_rate: float = 0.9
     answer_auto_submit: bool = False
     notification_config: dict = field(default_factory=dict)

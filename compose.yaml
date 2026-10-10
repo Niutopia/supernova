@@ -15,7 +15,7 @@ services:
         find /app/data -type d -exec chmod 0700 {} +;
         find /app/data -type f -exec chmod 0600 {} +
     volumes:
-      - chaoxing-data:/app/data
+      - supernova-data:/app/data
     read_only: true
     cap_drop:
       - ALL
@@ -36,13 +36,14 @@ services:
     ports:
       - "127.0.0.1:5001:5000"
     volumes:
-      - chaoxing-data:/app/data
+      - supernova-data:/app/data
     # Keep the single-worker invariant explicit even if the image command is
     # changed in a later release.
     command: ["gunicorn", "--workers", "1", "--threads", "8", "--bind", "0.0.0.0:5000", "app:app"]
     environment:
-      CHAOXING_DATA_DIR: /app/data
-      CHAOXING_RUNNING_IN_DOCKER: "1"
+      SUPERNOVA_DATA_DIR: /app/data
+      SUPERNOVA_RUNNING_IN_DOCKER: "1"
+      SUPERNOVA_ALLOWED_HOSTS: ${SUPERNOVA_ALLOWED_HOSTS:-}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     read_only: true
@@ -62,6 +63,6 @@ services:
       start_period: 20s
 
 volumes:
-  chaoxing-data:
+  supernova-data:
     name: ${SUPERNOVA_DATA_VOLUME:-supernova-data}
     external: ${SUPERNOVA_DATA_EXTERNAL:-false}

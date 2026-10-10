@@ -3,13 +3,13 @@ chcp 65001 >nul
 setlocal enabledelayedexpansion
 
 echo ╔══════════════════════════════════════════════════════════════╗
-echo ║         超星学习通自动化工具 - 便携版打包工具               ║
+echo ║         超新星 · 学习助手 - 便携版打包工具               ║
 echo ╚══════════════════════════════════════════════════════════════╝
 echo.
 
 set "SCRIPT_DIR=%~dp0"
 set "BUILD_DIR=%SCRIPT_DIR%portable_build"
-set "DIST_DIR=%SCRIPT_DIR%chaoxing_portable"
+set "DIST_DIR=%SCRIPT_DIR%supernova_portable"
 set "PYTHON_VERSION=3.13.7"
 set "PYTHON_EMBED_URL=https://www.python.org/ftp/python/%PYTHON_VERSION%/python-%PYTHON_VERSION%-embed-amd64.zip"
 set "PIP_BOOTSTRAP_VERSION=26.2.1"
@@ -142,13 +142,13 @@ echo setlocal enabledelayedexpansion
 echo.
 echo set "SCRIPT_DIR=%%~dp0"
 echo set "PYTHON_EXE=%%SCRIPT_DIR%%python\python.exe"
-echo set "CHAOXING_ENABLE_OCR=0"
+echo set "SUPERNOVA_ENABLE_OCR=0"
 echo.
 echo pushd "%%SCRIPT_DIR%%"
 echo.
 echo echo.
 echo echo ========================================================
-echo echo           超星学习通自动化工具 - 便携版
+echo echo           超新星 · 学习助手 - 便携版
 echo echo ========================================================
 echo echo.
 echo.
@@ -176,13 +176,13 @@ echo setlocal
 echo.
 echo set "SCRIPT_DIR=%%~dp0"
 echo set "PYTHON_EXE=%%SCRIPT_DIR%%python\python.exe"
-echo set "CHAOXING_ENABLE_OCR=0"
+echo set "SUPERNOVA_ENABLE_OCR=0"
 echo.
 echo pushd "%%SCRIPT_DIR%%"
 echo.
 echo echo.
 echo echo ========================================================
-echo echo         超星学习通自动化工具 - 命令行模式
+echo echo         超新星 · 学习助手 - 命令行模式
 echo echo ========================================================
 echo echo.
 echo "%%PYTHON_EXE%%" main.py
@@ -199,13 +199,13 @@ echo setlocal
 echo.
 echo set "SCRIPT_DIR=%%~dp0"
 echo set "PYTHON_EXE=%%SCRIPT_DIR%%python\python.exe"
-echo set "CHAOXING_ENABLE_OCR=0"
+echo set "SUPERNOVA_ENABLE_OCR=0"
 echo.
 echo pushd "%%SCRIPT_DIR%%"
 echo.
 echo echo.
 echo echo ========================================================
-echo echo           超星学习通自动化工具 - Web 模式
+echo echo           超新星 · 学习助手 - Web 模式
 echo echo ========================================================
 echo echo.
 echo echo [INFO] 正在打开浏览器: http://localhost:5000
@@ -219,7 +219,7 @@ echo pause
 
 REM 创建 README
 (
-echo # 超星学习通自动化工具 - 便携版
+echo # 超新星 · 学习助手 - 便携版
 echo.
 echo ## 使用方法
 echo.
@@ -242,7 +242,7 @@ echo.
 echo ## 目录结构
 echo.
 echo ```
-echo chaoxing_portable/
+echo supernova_portable/
 echo ├── python/          # 嵌入式 Python 运行时
 echo ├── api/             # 后端 API 模块
 echo ├── web/dist/        # 前端静态文件
@@ -262,10 +262,10 @@ echo.
 echo ╔══════════════════════════════════════════════════════════════╗
 echo ║                      打包完成！                              ║
 echo ╠══════════════════════════════════════════════════════════════╣
-echo ║  输出目录: chaoxing_portable                                 ║
+echo ║  输出目录: supernova_portable                                 ║
 echo ║                                                              ║
 echo ║  使用方法:                                                   ║
-echo ║    1. 将 chaoxing_portable 文件夹复制到任意位置              ║
+echo ║    1. 将 supernova_portable 文件夹复制到任意位置              ║
 echo ║    2. 双击 "启动.bat" 运行程序                               ║
 echo ╚══════════════════════════════════════════════════════════════╝
 echo.
@@ -274,11 +274,11 @@ REM 询问是否打包为 zip
 set /p CREATE_ZIP="是否将便携版打包为 ZIP 文件? (Y/N): "
 if /i "%CREATE_ZIP%"=="Y" (
     echo 正在创建 ZIP 文件...
-    powershell -Command "Compress-Archive -Path '%DIST_DIR%\*' -DestinationPath '%SCRIPT_DIR%chaoxing_portable.zip' -Force"
+    powershell -Command "Compress-Archive -Path '%DIST_DIR%\*' -DestinationPath '%SCRIPT_DIR%supernova_portable.zip' -Force"
     if errorlevel 1 (
         echo    ❌ ZIP 创建失败
     ) else (
-        echo    ✅ 已创建: chaoxing_portable.zip
+        echo    ✅ 已创建: supernova_portable.zip
     )
 )
 

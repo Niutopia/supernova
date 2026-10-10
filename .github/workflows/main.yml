@@ -55,7 +55,7 @@ jobs:
         run: docker build --file Dockerfile --tag supernova:ci .
 
   windows:
-    name: Windows portable package
+    name: Windows CLI package
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -73,19 +73,19 @@ jobs:
           python -m pip install pyinstaller
 
       - name: Build Windows binary
-        run: pyinstaller -F main.py -n 'chaoxing' --add-data "resource;resource"
+        run: pyinstaller -F main.py -n 'supernova-cli' --add-data "resource;resource"
 
       - name: Create release package
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force release | Out-Null
-          Copy-Item dist\chaoxing.exe release\
+          Copy-Item dist\supernova-cli.exe release\
           Copy-Item config.ini.example release\
           Push-Location release
-          7z a -tzip chaoxing.zip chaoxing.exe config.ini.example
+          7z a -tzip supernova-cli.zip supernova-cli.exe config.ini.example
           Pop-Location
 
       - uses: actions/upload-artifact@v4
         with:
-          name: win64
-          path: release/chaoxing.zip
+          name: supernova-cli-win64
+          path: release/supernova-cli.zip

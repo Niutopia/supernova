@@ -9,7 +9,7 @@ def test_health_uses_standard_envelope(tmp_path: Path):
     assert response.status_code == 200
     assert response.get_json() == {
         "status": True,
-        "data": {"service": "chaoxing-web"},
+        "data": {"service": "supernova-web"},
     }
 
 

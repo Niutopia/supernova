@@ -28,8 +28,9 @@ python -m pytest
 Docker 因此明确使用单个 Gunicorn worker；不要自行改成多 worker，除非先将任务锁
 和状态迁移到共享存储。
 
-PaddleOCR 是可选的本地 OCR 路径，不属于默认 Web/Docker 依赖。只有明确需要本地
-OCR 时才按 README 安装，并设置 `CHAOXING_ENABLE_OCR=1`。
+PaddleOCR 是可选的本地 OCR 路径，不属于默认 Web/Docker 依赖，仓库也不再附带其
+源码。只有明确需要本地 OCR 时才执行 `pip install paddleocr`，并设置
+`SUPERNOVA_ENABLE_OCR=1`。
 
 ## 前端
 

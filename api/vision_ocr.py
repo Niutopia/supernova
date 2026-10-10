@@ -10,17 +10,16 @@
 - 其他 OpenAI 兼容 API
 
 通过环境变量配置：
-- CHAOXING_VISION_OCR_PROVIDER: 提供商类型 (openai, claude, qwen, siliconflow, openai_compatible)
-- CHAOXING_VISION_OCR_ENDPOINT: API 端点 (可选，各提供商有默认值)
-- CHAOXING_VISION_OCR_KEY: API 密钥
-- CHAOXING_VISION_OCR_MODEL: 模型名称 (可选，各提供商有默认值)
-- CHAOXING_VISION_OCR_PROMPT: 自定义 OCR 提示词 (可选)
+- SUPERNOVA_VISION_OCR_PROVIDER: 提供商类型 (openai, claude, qwen, siliconflow, openai_compatible)
+- SUPERNOVA_VISION_OCR_ENDPOINT: API 端点 (可选，各提供商有默认值)
+- SUPERNOVA_VISION_OCR_KEY: API 密钥
+- SUPERNOVA_VISION_OCR_MODEL: 模型名称 (可选，各提供商有默认值)
+- SUPERNOVA_VISION_OCR_PROMPT: 自定义 OCR 提示词 (可选)
 """
 
 import base64
 from contextlib import contextmanager
 import contextvars
-import os
 import threading
 from collections.abc import Iterator, Mapping
 from typing import Optional, Dict, Any
@@ -28,6 +27,7 @@ from typing import Optional, Dict, Any
 import requests
 
 from api.logger import logger
+from api.config import env
 
 # ============== 配置常量 ==============
 
@@ -175,8 +175,8 @@ def _load_vision_ocr_config() -> Optional[Dict[str, str]]:
         if _VISION_OCR_ENABLED is not None:
             return dict(_VISION_OCR_CONFIG) if _VISION_OCR_ENABLED and _VISION_OCR_CONFIG else None
 
-        provider = os.environ.get("CHAOXING_VISION_OCR_PROVIDER", "").strip().lower()
-        api_key = os.environ.get("CHAOXING_VISION_OCR_KEY", "").strip()
+        provider = env("VISION_OCR_PROVIDER").strip().lower()
+        api_key = env("VISION_OCR_KEY").strip()
 
         if not provider or not api_key:
             _VISION_OCR_ENABLED = False
@@ -186,7 +186,7 @@ def _load_vision_ocr_config() -> Optional[Dict[str, str]]:
         # 获取提供商默认配置
         defaults = PROVIDER_DEFAULTS.get(provider, PROVIDER_DEFAULTS["openai_compatible"])
 
-        endpoint = os.environ.get("CHAOXING_VISION_OCR_ENDPOINT", "").strip()
+        endpoint = env("VISION_OCR_ENDPOINT").strip()
         if not endpoint:
             endpoint = defaults["endpoint"]
 
@@ -196,11 +196,11 @@ def _load_vision_ocr_config() -> Optional[Dict[str, str]]:
             _VISION_OCR_CONFIG = None
             return None
 
-        model = os.environ.get("CHAOXING_VISION_OCR_MODEL", "").strip()
+        model = env("VISION_OCR_MODEL").strip()
         if not model:
             model = defaults["model"]
 
-        prompt = os.environ.get("CHAOXING_VISION_OCR_PROMPT", "").strip()
+        prompt = env("VISION_OCR_PROMPT").strip()
         if not prompt:
             prompt = DEFAULT_OCR_PROMPT
 
